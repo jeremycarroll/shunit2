@@ -45,7 +45,7 @@ _shunit_log_fail()
 {
   _shunit_msg_=$1
 
-  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$( echo ${_shunit_msg_} | sed 's/</&lg;/g;s/>/&gt;/g' )\"/>"
+  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$( echo "${_shunit_msg_}" | sed 's/</&lg;/g;s/>/&gt;/g' )\"/>"
 
   unset _shunit_msg_
 }
