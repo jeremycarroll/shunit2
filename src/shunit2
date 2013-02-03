@@ -26,8 +26,11 @@ SHUNIT_EXIT_NOW=0
 # enable strict mode by default
 SHUNIT_STRICT=${SHUNIT_STRICT:-${SHUNIT_TRUE}}
 
-# Output Types
+# Output to stdout
 SHUNIT_STDOUT=${SHUNIT_STDOUT:-${SHUNIT_TRUE}}
+
+# Include environment
+SHUNIT_INCLUDE_ENV=${SHUNIT_INCLUDE_ENV:-${SHUNIT_TRUE}}
 
 #_shunit_warn() { echo "shunit2:WARN $@" >&2; }
 #_shunit_error() { echo "shunit2:ERROR $@" >&2; }
@@ -990,9 +993,9 @@ _shunit_assertFail()
   __shunit_testSuccess=${SHUNIT_FALSE}
   __shunit_assertsFailed=`expr ${__shunit_assertsFailed} + 1`
   __shunit_assertsTotal=`expr ${__shunit_assertsTotal} + 1`
-  [ ${SHUNIT_STDOUT} -eq ${SHUNIT_TRUE} ] && echo "${__SHUNIT_ASSERT_MSG_PREFIX}${_shunit_msg_}"
+  [ ${SHUNIT_STDOUT} -eq ${SHUNIT_TRUE} ] && echo "${__SHUNIT_ASSERT_MSG_PREFIX}: ${_shunit_msg_}"
 
-  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$(echo ${_shunit_msg_} | sed 's/</&lg;/g;s/>/&gt;/g')\"/>"
+  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$(echo "${_shunit_msg_}" | sed 's/</&lg;/g;s/>/&gt;/g')\"/>"
 
   unset _shunit_msg_
 }
@@ -1014,7 +1017,7 @@ _shunit_assertError()
 
   __shunit_assertsError=`expr ${__shunit_assertsError} + 1`
   __shunit_assertsTotal=`expr ${__shunit_assertsTotal} + 1`
-  _shunit_error "${__SHUNIT_ASSERT_MSG_PREFIX}: $(echo ${_shunit_msg_} | sed 's/</&lg;/g;s/>/&gt;/g')"
+  _shunit_error "${__SHUNIT_ASSERT_MSG_PREFIX}: $(echo "${_shunit_msg_}" | sed 's/</&lg;/g;s/>/&gt;/g')"
 
   unset _shunit_msg_
 }
@@ -1175,7 +1178,11 @@ unset shunit_func_ shunit_funcs_
 __shunit_suite_name=$(basename $0 | sed 's/\..*$//')
 
 # get environment
-_shunit_env_=$(env | sed 's!=!" value="!;s!^!<property name="!;s!$!"/>!')
+if [ ${SHUNIT_INCLUDE_ENV} -eq ${SHUNIT_TRUE} ]; then
+  _shunit_env_=$(env | sed 's!=!" value="!;s!^!<property name="!;s!$!"/>!')
+else
+  _shunit_env_=""
+fi
 
 # store the test suite execution date and start time
 __shunit_suite_timestamp=$(date -u '+%Y-%m-%dT%T')
