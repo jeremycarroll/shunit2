@@ -5,7 +5,7 @@ testAdding()
 {
   result=`add_generic 1 2`
   assertEquals \
-      "the result of '${result}' was wrong" \
+      "the result of '${result}' was wrong & something" \
       2 "${result}"
 }
 
