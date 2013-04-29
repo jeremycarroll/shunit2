@@ -43,6 +43,13 @@ _shunit_escape_xml()
   sed 's/</\&lt;/g;s/>/\&gt;/g;s/&/\&amp;/g'
 }
   
+# for measuring time, use milliseconds (Linux)
+# Some Unixes (e.g. MacOS) do not support %N on date
+
+_shunit_ms_date()
+{
+  date  '+%s.%N' | sed 's/N$//'
+}
 
 #
 # some convenient log functions
@@ -860,7 +867,7 @@ _shunit_execSuite()
     setUp
 
     # store the test case execution start time
-    _shunit_case_starttime_=$(date '+%s.%N')
+    _shunit_case_starttime_=$(_shunit_ms_date)
 
     # execute the test
     echo "${_shunit_case_}"
@@ -868,7 +875,7 @@ _shunit_execSuite()
     eval ${_shunit_case_}
 
     # store the test case execution end time and duration
-    _shunit_case_endtime_=$(date '+%s.%N')
+    _shunit_case_endtime_=$(_shunit_ms_date)
     _shunit_case_duration_=$(echo ${_shunit_case_endtime_} - ${_shunit_case_starttime_} | bc)
 
     # check errors and output test case status
@@ -1194,13 +1201,13 @@ fi
 
 # store the test suite execution date and start time
 __shunit_suite_timestamp=$(date -u '+%Y-%m-%dT%T')
-__shunit_suite_starttime=$(date '+%s.%N')
+__shunit_suite_starttime=$(_shunit_ms_date)
 
 # execute the tests
 _shunit_execSuite
 
 # store the test suite execution end time and duration
-__shunit_suite_endtime=$(date '+%s.%N')
+__shunit_suite_endtime=$(_shunit_ms_date)
 __shunit_suite_duration=$(echo ${__shunit_suite_endtime} - ${__shunit_suite_starttime} | bc)
 
 # execute the oneTimeTearDown function (if it exists)
