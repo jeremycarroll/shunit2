@@ -336,6 +336,7 @@ job.</p>
 <li><a class="reference internal" href="#error-handling" id="id15">Error handling</a></li>
 <li><a class="reference internal" href="#including-line-numbers-in-asserts-macros" id="id16">Including Line Numbers in Asserts (Macros)</a></li>
 <li><a class="reference internal" href="#test-skipping" id="id17">Test Skipping</a></li>
+<li><a class="reference internal" href="#xml-output" id="xml-output-toc">XML Output</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#appendix" id="id18">Appendix</a><ul>
@@ -833,6 +834,16 @@ indicates that some tests were skipped.</p>
 <tt class="docutils literal">stopSkipping()</tt>, and <tt class="docutils literal">isSkipping()</tt>. Once skipping is enabled, it will
 remain enabled until the end of the current test function call, after which
 skipping is disabled.</p>
+</div>
+<div class="section" id="xml-output">
+<h2><a class="toc-backref" href="#xml-output-toc">XML Output</a></h2>
+<p>
+To integrate with junit compliant tools it is sometime useful to have an
+XML file with the test report.
+Such a report is saved into a pre-existing directory given by the 
+<tt class="docutils literal">SHUNIT_OUTPUTDIR</tt>
+environment variable.
+</p>
 </div>
 </div>
 <div class="section" id="appendix">

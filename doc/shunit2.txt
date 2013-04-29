@@ -515,6 +515,15 @@ Skipping can be controlled with the following functions: ``startSkipping()``,
 remain enabled until the end of the current test function call, after which
 skipping is disabled.
 
+XML Output
+----------
+
+To integrate with junit compliant tools it is sometime useful to have an
+XML file with the test report.
+Such a report is saved into a pre-existing directory given by the 
+``SHUNIT_OUTPUTDIR`` environment variable.
+
+
 Appendix
 ========
 
