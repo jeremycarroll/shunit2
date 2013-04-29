@@ -40,7 +40,7 @@ SHUNIT_INCLUDE_ENV=${SHUNIT_INCLUDE_ENV:-${SHUNIT_TRUE}}
 
 _shunit_escape_xml()
 {
-  sed 's/</\&lt;/g;s/>/\&gt;/g'
+  sed 's/</\&lt;/g;s/>/\&gt;/g;s/&/\&amp;/g'
 }
   
 
