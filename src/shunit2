@@ -924,7 +924,7 @@ _shunit_generateReport()
 #          && _shunit_ok_=${SHUNIT_FALSE}
 
   if [ -n "${SHUNIT_OUTPUTDIR:-}" ]; then
-    cat << EOF >> "${SHUNIT_OUTPUTDIR}/TEST-${__shunit_suite_name}.xml"
+    cat << EOF > "${SHUNIT_OUTPUTDIR}/TEST-${__shunit_suite_name}.xml"
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuite errors="${_shunit_errors_}" failures="${_shunit_failures_}" hostname="$(hostname)" name="${__shunit_suite_name}" tests="${__shunit_testsTotal}" time="${__shunit_suite_duration}" timestamp="${__shunit_suite_timestamp}">
   ${__shunit_cases}
