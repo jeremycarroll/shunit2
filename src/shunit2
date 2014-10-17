@@ -1173,6 +1173,9 @@ __shunit_system_err=$(mktemp 'shunit-err.XXXX')
 #exec 6>&1 7>&2
 #exec >> ${__shunit_system_out} 2>> ${__shunit_system_err}
 
+# get test suite name 
+__shunit_suite_name=$(basename $0 | sed 's/\..*$//')
+
 # execute the oneTimeSetUp function (if it exists)
 oneTimeSetUp #| tee -a ${__shunit_system_out} 2>&1
 
@@ -1188,9 +1191,6 @@ if [ -z "${__shunit_suite}" ]; then
   done
 fi
 unset shunit_func_ shunit_funcs_
-
-# get test suite name
-__shunit_suite_name=$(basename $0 | sed 's/\..*$//')
 
 # get environment
 if [ ${SHUNIT_INCLUDE_ENV} -eq ${SHUNIT_TRUE} ]; then
@@ -1211,7 +1211,7 @@ __shunit_suite_endtime=$(_shunit_ms_date)
 __shunit_suite_duration=$(echo ${__shunit_suite_endtime} - ${__shunit_suite_starttime} | bc)
 
 # execute the oneTimeTearDown function (if it exists)
-oneTimeTearDown | tee -a ${__shunit_system_out} 2>&1
+oneTimeTearDown 
 
 # restore file descriptors
 #exec 1>&6 2>&7
