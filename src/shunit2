@@ -164,36 +164,38 @@ _SHUNIT_LINENO_='eval __shunit_lineno=""; if [ "${1:-}" = "--lineno" ]; then [ -
 #   message: string: failure message [optional]
 #   expected: string: expected value
 #   actual: string: actual value
+#   details: string: long string giving the details
 # Returns:
 #   integer: success (TRUE/FALSE/ERROR constant)
 assertEquals()
 {
   ${_SHUNIT_LINENO_}
-  if [ $# -lt 2 -o $# -gt 3 ]; then
+  if [ $# -lt 2 -o $# -gt 4 ]; then
 #    _shunit_error "assertEquals() requires two or three arguments; $# given"
 #    _shunit_error "1: ${1:+$1} 2: ${2:+$2} 3: ${3:+$3}${4:+ 4: $4}"
-    _shunit_assertError "assertEquals() requires two or three arguments; $# given 1: ${1:+$1} 2: ${2:+$2} 3: ${3:+$3}"
+    _shunit_assertError "assertEquals() requires two or three or four arguments; $# given; 1: ${1:+$1} 2: ${2:+$2} 3: ${3:+$3} 4: ${4:+$4}"
     return ${SHUNIT_ERROR}
   fi
   _shunit_shouldSkip && return ${SHUNIT_TRUE}
 
   shunit_message_=${__shunit_lineno}
-  if [ $# -eq 3 ]; then
+  if [ $# -ge 1 ]; then
     shunit_message_="${shunit_message_}$1"
     shift
   fi
   shunit_expected_=$1
   shunit_actual_=$2
+  shunit_details_=$3
 
   shunit_return=${SHUNIT_TRUE}
   if [ "${shunit_expected_}" = "${shunit_actual_}" ]; then
     _shunit_assertPass
   else
-    failNotEquals "${shunit_message_}" "${shunit_expected_}" "${shunit_actual_}"
+    failNotEquals "${shunit_message_}" "${shunit_expected_}" "${shunit_actual_}" "${shunit_details_}"
     shunit_return=${SHUNIT_FALSE}
   fi
 
-  unset shunit_message_ shunit_expected_ shunit_actual_
+  unset shunit_message_ shunit_expected_ shunit_actual_ shunit_details_
   return ${shunit_return}
 }
 _ASSERT_EQUALS_='eval assertEquals --lineno "${LINENO:-}"'
@@ -532,30 +534,32 @@ _FAIL_='eval fail --lineno "${LINENO:-}"'
 #   message: string: failure message [optional]
 #   expected: string: expected value
 #   actual: string: actual value
+#   details: string: long string giving the details
 # Returns:
 #   integer: success (TRUE/FALSE/ERROR constant)
 failNotEquals()
 {
   ${_SHUNIT_LINENO_}
-  if [ $# -lt 2 -o $# -gt 3 ]; then
+  if [ $# -lt 2 -o $# -gt 4 ]; then
 #    _shunit_error "failNotEquals() requires one or two arguments; $# given"
-    _shunit_assertError "failNotEquals() requires one or two arguments; $# given"
+    _shunit_assertError "failNotEquals() requires two or three or four arguments; $# given 1: ${1:+$1} 2: ${2:+$2} 3: ${3:+$3} 4: ${4:+$4}"
     return ${SHUNIT_ERROR}
   fi
   _shunit_shouldSkip && return ${SHUNIT_TRUE}
 
   shunit_message_=${__shunit_lineno}
-  if [ $# -eq 3 ]; then
+  if [ $# -ge 3 ]; then
     shunit_message_="${shunit_message_}$1"
     shift
   fi
   shunit_expected_=$1
   shunit_actual_=$2
+  shunit_details_=$3
 
-  _shunit_assertFail "${shunit_message_:+${shunit_message_} }expected:<${shunit_expected_}> but was:<${shunit_actual_}>"
+  _shunit_assertFail "${shunit_message_:+${shunit_message_} }expected:${shunit_expected_} but was:${shunit_actual_}" "$shunit_details_"
 #  _shunit_assertFail "${shunit_message_:+${shunit_message_} }expected:&lt;${shunit_unexpected_}&gt; but was:&lt;${shunit_actual_}&gt;"
 
-  unset shunit_message_ shunit_expected_ shunit_actual_
+  unset shunit_message_ shunit_expected_ shunit_actual_ shunit_details_
   return ${SHUNIT_FALSE}
 }
 _FAIL_NOT_EQUALS_='eval failNotEquals --lineno "${LINENO:-}"'
@@ -924,7 +928,7 @@ _shunit_generateReport()
 #          && _shunit_ok_=${SHUNIT_FALSE}
 
   if [ -n "${SHUNIT_OUTPUTDIR:-}" ]; then
-    cat << EOF >> "${SHUNIT_OUTPUTDIR}/TEST-${__shunit_suite_name}.xml"
+    cat << EOF > "${SHUNIT_OUTPUTDIR}/TEST-${__shunit_suite_name}.xml"
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuite errors="${_shunit_errors_}" failures="${_shunit_failures_}" hostname="$(hostname)" name="${__shunit_suite_name}" tests="${__shunit_testsTotal}" time="${__shunit_suite_duration}" timestamp="${__shunit_suite_timestamp}">
   ${__shunit_cases}
@@ -1001,16 +1005,21 @@ _shunit_assertPass()
 #
 # Args:
 #   message: string: failure message to provide user
+#   details: string: details of the failure
 _shunit_assertFail()
 {
   _shunit_msg_=$1
+  _shunit_details=$_shunit_msg_
+  if [ $# -gt 1 ]; then
+    _shunit_details=$2
+  fi
 
   __shunit_testSuccess=${SHUNIT_FALSE}
   __shunit_assertsFailed=`expr ${__shunit_assertsFailed} + 1`
   __shunit_assertsTotal=`expr ${__shunit_assertsTotal} + 1`
   [ ${SHUNIT_STDOUT} -eq ${SHUNIT_TRUE} ] && echo "${__SHUNIT_ASSERT_MSG_PREFIX}: ${_shunit_msg_}"
 
-  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$(echo "${_shunit_msg_}" | _shunit_escape_xml)\"/>"
+  __shunit_case_errors="${__shunit_case_errors}<failure type=\"${__SHUNIT_ASSERT_MSG_PREFIX}\" message=\"$(echo "${_shunit_msg_}" | _shunit_escape_xml)\">\"$(echo "${_shunit_details}" | _shunit_escape_xml)\"</failure>"
 
   unset _shunit_msg_
 }
@@ -1173,6 +1182,9 @@ __shunit_system_err=$(mktemp 'shunit-err.XXXX')
 #exec 6>&1 7>&2
 #exec >> ${__shunit_system_out} 2>> ${__shunit_system_err}
 
+# get test suite name 
+__shunit_suite_name=$(basename $0 | sed 's/\..*$//')
+
 # execute the oneTimeSetUp function (if it exists)
 oneTimeSetUp #| tee -a ${__shunit_system_out} 2>&1
 
@@ -1188,9 +1200,6 @@ if [ -z "${__shunit_suite}" ]; then
   done
 fi
 unset shunit_func_ shunit_funcs_
-
-# get test suite name
-__shunit_suite_name=$(basename $0 | sed 's/\..*$//')
 
 # get environment
 if [ ${SHUNIT_INCLUDE_ENV} -eq ${SHUNIT_TRUE} ]; then
@@ -1211,7 +1220,7 @@ __shunit_suite_endtime=$(_shunit_ms_date)
 __shunit_suite_duration=$(echo ${__shunit_suite_endtime} - ${__shunit_suite_starttime} | bc)
 
 # execute the oneTimeTearDown function (if it exists)
-oneTimeTearDown | tee -a ${__shunit_system_out} 2>&1
+oneTimeTearDown 
 
 # restore file descriptors
 #exec 1>&6 2>&7
